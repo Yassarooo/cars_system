@@ -55,7 +55,7 @@ class _HomePHWidgetState extends State<HomePHWidget> {
       responseHandler.handleResponse(code, context, homephscaffoldKey, true);
       await sharedData.loadGlobals();
       if (await apiManager.fetchCars(context, homephscaffoldKey) == true &&
-          await apiManager.fetchParams() == true)
+          await apiManager.fetchParams(context,homephscaffoldKey) == true)
         setState(() {
           globals.carsobj = globals.carsobj;
           _isloading = false;
@@ -79,11 +79,11 @@ class _HomePHWidgetState extends State<HomePHWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return !_isloading
-        ? Scaffold(
-            key: homephscaffoldKey,
-            backgroundColor: globals.kBackgroundColor,
-            body: SafeArea(
+    return Scaffold(
+      key: homephscaffoldKey,
+      backgroundColor: globals.kBackgroundColor,
+      body: !_isloading
+          ? SafeArea(
               child: RefreshIndicator(
                 onRefresh: _getData,
                 child: Column(
@@ -555,9 +555,9 @@ class _HomePHWidgetState extends State<HomePHWidget> {
                   ],
                 ),
               ),
-            ),
-          )
-        : Center(child: CircularProgressIndicator());
+            )
+          : Center(child: CircularProgressIndicator()),
+    );
   }
 
   List<Widget> buildDeals(String deal) {

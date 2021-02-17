@@ -32,7 +32,7 @@ class _ParamsPHWidgetState extends State<ParamsPHWidget> {
 
   Future<void> _getData() async {
     _isloading = true;
-    bool success = await apiManager.fetchParams();
+    bool success = await apiManager.fetchParams(context, _paramScaffoldKey);
     if (success)
       setState(() {
         globals.paramsobj = globals.paramsobj;

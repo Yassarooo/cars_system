@@ -27,6 +27,14 @@ showMessage(GlobalKey<ScaffoldState> scaffoldkey, String message, int duration,
     duration: Duration(seconds: duration),
   ));
 }
+showMessage2(ScaffoldState scaffoldkey, String message,
+    [MaterialColor color = Colors.red]) {
+  scaffoldkey.showSnackBar(SnackBar(
+    backgroundColor: color,
+    content: Text(message, style: TextStyle(color: Colors.white)),
+    duration: Duration(seconds: 2),
+  ));
+}
 
 Color setColorfromRate(double rate) {
   if (rate < 0.4)

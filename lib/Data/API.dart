@@ -28,9 +28,10 @@ class ApiManager {
       return true;
     } else {
       await this.CheckToken(globals.token);
+      //globals.showMessage(scaffoldkey, "Unknown error occured", 2, Colors.red);
       responseHandler.handleResponse(
           response.statusCode, context, scaffoldkey, false);
-      throw HttpException('Failed to load cars');
+      //throw HttpException('Failed to load cars');
     }
   }
 
@@ -125,7 +126,8 @@ class ApiManager {
     return false;
   }
 
-  Future<bool> fetchParams() async {
+  Future<bool> fetchParams(
+      BuildContext context, GlobalKey<ScaffoldState> scaffoldkey) async {
     var uri = Uri.https(globals.host, '/api/params');
     var response = await http.get(uri, headers: globals.myheaders);
     var jsonResponse;
@@ -134,7 +136,9 @@ class ApiManager {
       globals.paramsobj = Params.fromJson(jsonResponse);
       return true;
     } else {
-      throw Exception('Failed to load Params');
+      responseHandler.handleResponse(
+          response.statusCode, context, scaffoldkey, false);
+      //throw Exception('Failed to load Params');
     }
   }
 
@@ -283,7 +287,7 @@ class ApiManager {
             Uri.https('networkapplications.herokuapp.com', '/api/params/$id');
         var response = await http.delete(uri, headers: globals.myheaders);
         if (response.statusCode == 200) {
-          await this.fetchParams();
+          await this.fetchParams(con, key);
           globals.showMessage(
               key, "Param ${id} deleted successfully", 2, Colors.green);
           Navigator.pop(con);

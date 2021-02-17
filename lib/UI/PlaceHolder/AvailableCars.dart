@@ -13,7 +13,7 @@ class _AvailableCarsState extends State<AvailableCars> {
   ApiManager apiManager = ApiManager();
   bool _isloading = true;
   final GlobalKey<ScaffoldState> availablescaffoldKey =
-     GlobalKey<ScaffoldState>();
+      GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -37,11 +37,11 @@ class _AvailableCarsState extends State<AvailableCars> {
 
   @override
   Widget build(BuildContext context) {
-    return !_isloading
-        ? Scaffold(
-            key: availablescaffoldKey,
-            backgroundColor: globals.kBackgroundColor,
-            body: RefreshIndicator(
+    return Scaffold(
+      key: availablescaffoldKey,
+      backgroundColor: globals.kBackgroundColor,
+      body: !_isloading
+          ? RefreshIndicator(
               onRefresh: () async {
                 _getData();
                 setState(() {
@@ -119,8 +119,9 @@ class _AvailableCarsState extends State<AvailableCars> {
                   ],
                 ),
               ),
-            ),
-            /*
+            )
+          : Center(child: CircularProgressIndicator()),
+      /*
       bottomNavigationBar: Container(
         height: 80,
         decoration: BoxDecoration(
@@ -136,8 +137,7 @@ class _AvailableCarsState extends State<AvailableCars> {
         ),
       ),
       */
-          )
-        : Center(child: CircularProgressIndicator());
+    );
   }
 
   Widget buildFilterIcon() {

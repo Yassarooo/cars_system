@@ -5,8 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutterapp/Data/API.dart';
 import 'package:flutterapp/Model/User.dart';
 import 'package:flutterapp/UI/Welcome/SignInPage.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutterapp/globals.dart' as globals;
 
 class SignUpPage extends StatefulWidget {
