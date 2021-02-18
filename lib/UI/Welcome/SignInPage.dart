@@ -35,6 +35,14 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
+  bool isValidUsername(String username) {
+    if (username.isEmpty) {
+      return false;
+    }
+    if (username.contains(" ")) return false;
+    return true;
+  }
+
   signIn(String username, pass) async {
     int code = await apiManager.signIn(username, pass, context);
     if (code == 401) {
@@ -110,10 +118,13 @@ class _SignInPageState extends State<SignInPage> {
                                       ),
                                       Expanded(
                                         child: TextFormField(
+                                          keyboardType: TextInputType.url,
                                           autovalidateMode: AutovalidateMode
                                               .onUserInteraction,
                                           validator: (val) =>
-                                              val.isEmpty ? "required" : null,
+                                              !isValidUsername(val)
+                                                  ? "incorrect username"
+                                                  : null,
                                           controller: usernameController,
                                           decoration: InputDecoration(
                                             hintText: "Enter your username",

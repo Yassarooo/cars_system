@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutterapp/Data/API.dart';
 import 'package:flutterapp/Model/Car.dart';
+import 'package:flutterapp/Model/Specs.dart';
 import 'package:flutterapp/globals.dart' as globals;
 import 'package:image_picker/image_picker.dart';
 
@@ -27,6 +28,21 @@ class _BookCarState extends State<BookCar> {
   File _image;
 
   int _currentImage = 0;
+  Specs spec;
+
+  @override
+  void initState() {
+    super.initState();
+    getSpecs();
+  }
+
+  Future<void> getSpecs() async {
+    Specs s =
+        await apiManager.fetchSpec(context, _bookScaffoldKey, widget.car.id);
+    setState(() {
+      spec = s;
+    });
+  }
 
   List<Widget> buildPageIndicator() {
     List<Widget> list = [];
@@ -307,18 +323,21 @@ class _BookCarState extends State<BookCar> {
                         left: 16,
                       ),
                       margin: EdgeInsets.only(bottom: 14),
-                      child: ListView(
-                        physics: BouncingScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          buildSpecificationCar("Color", "White"),
-                          buildSpecificationCar("Gearbox", "Automatic"),
-                          buildSpecificationCar("Seat", "4"),
-                          buildSpecificationCar("Motor", "v10 2.0"),
-                          buildSpecificationCar("Speed (0-100)", "3.2 sec"),
-                          buildSpecificationCar("Top Speed", "121 mph"),
-                        ],
-                      ),
+                      child: spec == null
+                          ? ListView(
+                              physics: BouncingScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                buildSpecificationCar("Color", "White"),
+                                buildSpecificationCar("Gearbox", "Automatic"),
+                                buildSpecificationCar("Seat", "4"),
+                                buildSpecificationCar("Motor", "v10 2.0"),
+                                buildSpecificationCar(
+                                    "Speed (0-100)", "3.2 sec"),
+                                buildSpecificationCar("Top Speed", "121 mph"),
+                              ],
+                            )
+                          : Center(child: CircularProgressIndicator()),
                     ),
                   ],
                 ),

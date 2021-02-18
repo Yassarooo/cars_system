@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterapp/Data/ResponseHandler.dart';
 import 'package:flutterapp/Data/SharedData.dart';
 import 'package:flutterapp/Model/Parameters.dart';
+import 'package:flutterapp/Model/Specs.dart';
 import 'package:flutterapp/Model/User.dart';
 import 'package:flutterapp/UI/HomePage.dart';
 import 'package:http/http.dart' as http;
@@ -28,6 +29,28 @@ class ApiManager {
       return true;
     } else {
       await this.CheckToken(globals.token);
+      //globals.showMessage(scaffoldkey, "Unknown error occured", 2, Colors.red);
+      responseHandler.handleResponse(
+          response.statusCode, context, scaffoldkey, false);
+      //throw HttpException('Failed to load cars');
+    }
+  }  
+  
+  Future<Specs> fetchSpec(
+      BuildContext context, GlobalKey<ScaffoldState> scaffoldkey,id) async {
+    Map<String, String> Params = {
+      'carid': id,
+    };
+    var uri = Uri.https(globals.host, "/specs",Params);
+    var response = await http.get(uri, headers: globals.myheaders);
+    var jsonResponse;
+
+    if (response.statusCode == 200) {
+      jsonResponse = json.decode(response.body);
+      Specs spec = Specs.fromJson(jsonResponse);
+      return spec;
+    } else {
+      //await this.CheckToken(globals.token);
       //globals.showMessage(scaffoldkey, "Unknown error occured", 2, Colors.red);
       responseHandler.handleResponse(
           response.statusCode, context, scaffoldkey, false);
@@ -85,17 +108,15 @@ class ApiManager {
         var uri = Uri.https(
             'networkapplications.herokuapp.com', '/api/cars/${car.id}');
         var response = await http.delete(uri, headers: globals.myheaders);
-        if (response.statusCode == 200 ||
-            response.statusCode == 201 ||
-            response.statusCode == 500) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           await fetchCars(context, key);
-          Navigator.pop(context);
+          //Navigator.pop(context);
           globals.showMessage(
               key, "${car.model} Deleted Successfully", 2, Colors.green);
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-              (Route<dynamic> route) => false);
+          // Navigator.pushAndRemoveUntil(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => HomePage()),
+          //     (Route<dynamic> route) => false);
           return true;
         } else {
           Navigator.pop(context);

@@ -55,7 +55,7 @@ class _HomePHWidgetState extends State<HomePHWidget> {
       responseHandler.handleResponse(code, context, homephscaffoldKey, true);
       await sharedData.loadGlobals();
       if (await apiManager.fetchCars(context, homephscaffoldKey) == true &&
-          await apiManager.fetchParams(context,homephscaffoldKey) == true)
+          await apiManager.fetchParams(context, homephscaffoldKey) == true)
         setState(() {
           globals.carsobj = globals.carsobj;
           _isloading = false;
@@ -134,63 +134,14 @@ class _HomePHWidgetState extends State<HomePHWidget> {
                           ),
                           child: Column(
                             children: [
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          CupertinoIcons.wand_stars,
-                                          color: Colors.yellow,
-                                          size: 27,
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Text(
-                                          "TOP CARS",
-                                          style: TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 230,
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("highrate"),
-                                ),
-                              ),
+                              buildSection(
+                                  "TOP CARS",
+                                  "highrate",
+                                  Icon(
+                                    CupertinoIcons.wand_stars,
+                                    size: 27,
+                                    color: Colors.yellow,
+                                  )),
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
@@ -259,293 +210,35 @@ class _HomePHWidgetState extends State<HomePHWidget> {
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          MdiIcons.cash,
-                                          color: Colors.green,
-                                          size: 27,
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Text(
-                                          "Low Price",
-                                          style: TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              buildSection(
+                                  "Low Price",
+                                  "lowprice",
+                                  Icon(MdiIcons.cash,
+                                      size: 27, color: Colors.green)),
+                              buildSection(
+                                "Sedan",
+                                "Sedan",
+                                Icon(MdiIcons.car, size: 27),
                               ),
-                              Container(
-                                height: 230,
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("lowprice"),
-                                ),
+                              buildSection(
+                                "SUV",
+                                "SUV",
+                                Icon(MdiIcons.carEstate, size: 27),
                               ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Sedan",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              buildSection(
+                                "Compact",
+                                "Compact",
+                                Icon(MdiIcons.carHatchback, size: 27),
                               ),
-                              Container(
-                                height: 230,
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("Sedan"),
-                                ),
+                              buildSection(
+                                "Super Car",
+                                "Supercar",
+                                Icon(MdiIcons.carSports, size: 27),
                               ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "SUV",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 230,
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("SUV"),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Compact",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 230,
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("Compact"),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Super Car",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 230,
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("Supercar"),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "2021 Collection",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "view all",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: globals.kPrimaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 8,
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 12,
-                                          color: globals.kPrimaryColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                height: 230,
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: ListView(
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: buildDeals("2021"),
-                                ),
+                              buildSection(
+                                "2021 Collection",
+                                "2021",
+                                Icon(MdiIcons.carSports, size: 27),
                               ),
                             ],
                           ),
@@ -577,7 +270,9 @@ class _HomePHWidgetState extends State<HomePHWidget> {
         deal == "Compact" ||
         deal == "Supercar" ||
         deal == "Sedan" ||
-        deal == "Coupe") {
+        deal == "Coupe" ||
+        deal == "Sport" ||
+        deal == "Limousine") {
       for (Car c in globals.carsobj.cars)
         if (c.type == deal) filteredcars.add(c);
     } else {
@@ -597,5 +292,64 @@ class _HomePHWidgetState extends State<HomePHWidget> {
       only3++;
     }
     return list;
+  }
+
+  Widget buildSection(String title, String sort, Widget icn) {
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: <Widget>[
+                  icn,
+                  SizedBox(
+                    width: 8,
+                  ),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    "view all",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: globals.kPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 8,
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 12,
+                    color: globals.kPrimaryColor,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Container(
+          height: 230,
+          child: ListView(
+            physics: BouncingScrollPhysics(),
+            scrollDirection: Axis.horizontal,
+            children: buildDeals(sort),
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -47,43 +47,16 @@ class _AddCarPageState extends State<AddCarPage> {
     }
   }
 
-  Future<Null> _chooseYear(
-      BuildContext context, String initialDateString) async {
-    var now = DateTime.now();
-    var initialDate = convertToDate(initialDateString) ?? now;
-    initialDate = (initialDate.year >= 1900 && initialDate.isBefore(now)
-        ? initialDate
-        : now);
-
-    var result = await showDatePicker(
-        context: context,
-        initialDatePickerMode: DatePickerMode.year,
-        initialDate: initialDate,
-        firstDate: DateTime(1900),
-        lastDate: DateTime.now());
-
-    if (result == null) return;
-
-    setState(() {
-      yearController.text = result.year.toString();
-    });
-  }
-
   bool isValidYear(String year) {
     try {
-      int.parse(year);
-      return true;
+      DateTime now = DateTime.now();
+      int intyear = int.parse(year);
+      if (intyear < now.year && intyear > 1900)
+        return true;
+      else
+        return false;
     } catch (e) {
       return false;
-    }
-  }
-
-  DateTime convertToDate(String input) {
-    try {
-      var d = DateTime.parse(input);
-      return d;
-    } catch (e) {
-      return null;
     }
   }
 
@@ -255,12 +228,12 @@ class _AddCarPageState extends State<AddCarPage> {
                     controller: yearController,
                     cursorColor: Colors.white,
                     style: TextStyle(color: Colors.white70),
-                    validator: (val) =>
-                        !isValidYear(val) ? "Year is required" : null,
+                    validator: (val) => val.isEmpty
+                        ? "Year is required"
+                        : !isValidYear(val)
+                            ? "Enter valid year"
+                            : null,
                     inputFormatters: [LengthLimitingTextInputFormatter(20)],
-                    onTap: () {
-                      _chooseYear(context, yearController.text);
-                    },
                     decoration: InputDecoration(
                       icon: Icon(Icons.date_range, color: Colors.blue),
                       labelText: "Year",

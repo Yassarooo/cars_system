@@ -80,29 +80,32 @@ Widget buildCar(Car car, int index, BuildContext context) {
             child: Center(
               child: Hero(
                 tag: car.model + (globals.herocnt++).toString(),
-                child: car.images.length >= 1
-                    ? ExtendedImage.network(
-                        car.images[0],
-                        fit: BoxFit.fitWidth,
-                        cache: true,
-                        border: Border.all(color: Colors.red, width: 1.0),
-                        borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                        //cancelToken: cancellationToken,
-                      )
-                    : car.brandlogo != ""
-                        ? ExtendedImage.network(
-                            car.brandlogo,
-                            fit: BoxFit.fitWidth,
-                            cache: true,
-                            border: Border.all(color: Colors.red, width: 1.0),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(30.0)),
-                            //cancelToken: cancellationToken,
-                          )
-                        : Image.asset(
-                            "assets/images/camaro_0.png",
-                            fit: BoxFit.fitWidth,
-                          ),
+                child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: car.images.length >= 1
+                      ? ExtendedImage.network(
+                          car.images[0],
+                          fit: BoxFit.fitWidth,
+                          cache: true,
+                          border: Border.all(color: Colors.red, width: 1.0),
+                          borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                          //cancelToken: cancellationToken,
+                        )
+                      : car.brandlogo != ""
+                          ? ExtendedImage.network(
+                              car.brandlogo,
+                              fit: BoxFit.fitWidth,
+                              cache: true,
+                              border: Border.all(color: Colors.red, width: 1.0),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30.0)),
+                              //cancelToken: cancellationToken,
+                            )
+                          : Image.asset(
+                              "assets/images/camaro_0.png",
+                              fit: BoxFit.fitWidth,
+                            ),
+                ),
               ),
             ),
           ),
