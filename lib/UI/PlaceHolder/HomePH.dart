@@ -9,9 +9,11 @@ import 'package:flutterapp/Model/Car.dart';
 import 'package:flutterapp/UI/Car/BookCar.dart';
 import 'package:flutterapp/UI/Car/CarWidget.dart';
 import 'package:flutterapp/UI/PlaceHolder/AvailableCars.dart';
+import 'package:flutterapp/UI/Welcome/PinConfirm.dart';
 import 'package:flutterapp/UI/Welcome/WelcomePage.dart';
 import 'package:flutterapp/globals.dart' as globals;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePHWidget extends StatefulWidget {
   @override
@@ -45,14 +47,22 @@ class _HomePHWidgetState extends State<HomePHWidget> {
 
   checkLoginStatus() async {
     SharedData sharedData = SharedData();
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String token = await sharedData.loadToken();
-    if (token == null) {
+    if (sharedPreferences.getString("activate") != null) {
+      print(sharedPreferences.getString("activate"));
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PinCodeVerificationScreen(
+                  sharedPreferences.getString("activate"))),
+          (Route<dynamic> route) => false);
+    } else if (token == null) {
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (BuildContext context) => WelcomeScreen()),
           (Route<dynamic> route) => false);
     } else {
-      int code = await apiManager.CheckToken(token);
-      responseHandler.handleResponse(code, context, homephscaffoldKey, true);
+      await apiManager.CheckToken(token, context, homephscaffoldKey);
       await sharedData.loadGlobals();
       if (await apiManager.fetchCars(context, homephscaffoldKey) == true &&
           await apiManager.fetchParams(context, homephscaffoldKey) == true)
@@ -63,15 +73,16 @@ class _HomePHWidgetState extends State<HomePHWidget> {
     }
   }
 
-  Future<void> _getData() async {
-    _isloading = true;
+  Future<void> _getData([bool refresh = true]) async {
+    if (refresh) _isloading = true;
     bool success = await apiManager.fetchCars(context, homephscaffoldKey);
     if (success) {
       setState(() {
         globals.carsobj = globals.carsobj;
         _isloading = false;
       });
-      globals.showMessage(homephscaffoldKey, "Refreshed", 2, Colors.green);
+      if (refresh)
+        globals.showMessage(homephscaffoldKey, "Refreshed", 2, Colors.green);
     } else
       globals.showMessage(
           homephscaffoldKey, "An error occurred", 2, Colors.red);
@@ -231,13 +242,13 @@ class _HomePHWidgetState extends State<HomePHWidget> {
                                 Icon(MdiIcons.carHatchback, size: 27),
                               ),
                               buildSection(
-                                "Super Car",
-                                "Supercar",
+                                "2021 Collection",
+                                "2021",
                                 Icon(MdiIcons.carSports, size: 27),
                               ),
                               buildSection(
-                                "2021 Collection",
-                                "2021",
+                                "Limousine",
+                                "Limousine",
                                 Icon(MdiIcons.carSports, size: 27),
                               ),
                             ],
@@ -282,11 +293,12 @@ class _HomePHWidgetState extends State<HomePHWidget> {
       if (only3 == 3) break;
 
       list.add(GestureDetector(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => BookCar(car: c)),
             );
+            _getData(false);
           },
           child: buildCar(c, only3, context)));
       only3++;

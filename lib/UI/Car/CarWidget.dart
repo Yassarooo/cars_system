@@ -92,14 +92,20 @@ Widget buildCar(Car car, int index, BuildContext context) {
                           //cancelToken: cancellationToken,
                         )
                       : car.brandlogo != ""
-                          ? ExtendedImage.network(
-                              car.brandlogo,
-                              fit: BoxFit.fitWidth,
-                              cache: true,
-                              border: Border.all(color: Colors.red, width: 1.0),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30.0)),
-                              //cancelToken: cancellationToken,
+                          ? Padding(
+                              padding: EdgeInsets.only(
+                                  top: index == null ? 50 : 0,
+                                  bottom: index == null ? 50 : 0),
+                              child: ExtendedImage.network(
+                                car.brandlogo,
+                                fit: BoxFit.fitWidth,
+                                cache: true,
+                                border:
+                                    Border.all(color: Colors.red, width: 1.0),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(30.0)),
+                                //cancelToken: cancellationToken,
+                              ),
                             )
                           : Image.asset(
                               "assets/images/camaro_0.png",

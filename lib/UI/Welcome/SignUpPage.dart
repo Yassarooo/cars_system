@@ -4,8 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterapp/Data/API.dart';
 import 'package:flutterapp/Model/User.dart';
+import 'package:flutterapp/UI/Welcome/PinConfirm.dart';
 import 'package:flutterapp/UI/Welcome/SignInPage.dart';
 import 'package:flutterapp/globals.dart' as globals;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -19,6 +22,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _isLoading = false;
   User user;
   ApiManager apiManager = ApiManager();
+  SharedPreferences sharedPreferences;
 
   void _validate() {
     final isvalid = _form.currentState.validate();
@@ -31,20 +35,116 @@ class _SignUpPageState extends State<SignUpPage> {
         _isLoading = true;
       });
       SignUp(
-          nameController.text,
-          usernameController.text,
+          nameController.text.trim(),
+          usernameController.text.trim(),
           passwordController.text,
-          emailController.text,
+          emailController.text.trim(),
           phoneController.text,
           selectedGender,
           dateController.text);
     }
   }
 
-  bool isValidEmail(String email) {
+  isValidEmail(String email) {
+    if (oldemail == email) return true;
+
+    available = Container(
+      width: 15,
+      height: 15,
+      child: CircularProgressIndicator(
+        backgroundColor: globals.kPrimaryColor,
+      ),
+    );
     final RegExp regExp = RegExp(
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-    return regExp.hasMatch(email);
+    if (regExp.hasMatch(email)) {
+      checkload = true;
+      isAvailable(email, 1);
+      oldemail = email;
+      if (checkedemail)
+        return true;
+      else {
+        emailvalidatetext = "Email address belongs to another account";
+        return false;
+      }
+    } else {
+      emailvalidatetext = "Enter valid email address";
+      available = SizedBox();
+      return false;
+    }
+  }
+
+  isValidUsername(String username) {
+    if (oldusername == username) return true;
+
+    availableu = Container(
+      width: 15,
+      height: 15,
+      child: CircularProgressIndicator(
+        backgroundColor: globals.kPrimaryColor,
+      ),
+    );
+    final RegExp regExp =
+        RegExp(r"^(?=.{5,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$");
+    if (regExp.hasMatch(username)) {
+      checkload = true;
+      isAvailable(username, 0);
+      oldusername = username;
+      if (checkedusername)
+        return true;
+      else {
+        emailvalidatetext = "Username not available";
+        return false;
+      }
+    } else {
+      emailvalidatetext = "Enter valid username";
+      availableu = SizedBox();
+      return false;
+    }
+  }
+
+  isAvailable(String UsernameOrEmail, int i) async {
+    if (i == 0)
+      availableu = Container(
+        width: 15,
+        height: 15,
+        child: CircularProgressIndicator(
+          backgroundColor: globals.kPrimaryColor,
+        ),
+      );
+    else if (i == 1)
+      available = Container(
+        width: 15,
+        height: 15,
+        child: CircularProgressIndicator(
+          backgroundColor: globals.kPrimaryColor,
+        ),
+      );
+
+    int code = await apiManager.checkUsernameOrEmail(UsernameOrEmail);
+    if (code == 200 || code == 201) {
+      setState(() {
+        if (i == 0) {
+          checkedusername = true;
+          availableu = Icon(CupertinoIcons.checkmark_alt, color: Colors.green);
+        } else if (i == 1) {
+          checkedemail = true;
+          available = Icon(CupertinoIcons.checkmark_alt, color: Colors.green);
+        }
+      });
+      return true;
+    } else {
+      setState(() {
+        if (i == 0) {
+          checkedusername = false;
+          availableu = Icon(MdiIcons.close, color: Colors.red);
+        } else if (i == 1) {
+          checkedemail = false;
+          available = Icon(MdiIcons.close, color: Colors.red);
+        }
+      });
+      return false;
+    }
   }
 
   bool isValidPhoneNumber(String input) {
@@ -63,12 +163,13 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<Null> _chooseDate(
       BuildContext context, String initialDateString) async {
     var now = DateTime.now();
-    var initialDate = convertToDate(initialDateString) ?? now;
+    var initialDate = convertToDate(initialDateString) ?? DateTime(1999);
     initialDate = (initialDate.year >= 1900 && initialDate.isBefore(now)
         ? initialDate
         : now);
 
     var result = await showDatePicker(
+        initialDatePickerMode: DatePickerMode.year,
         context: context,
         initialDate: initialDate,
         firstDate: DateTime(1900),
@@ -98,25 +199,37 @@ class _SignUpPageState extends State<SignUpPage> {
 
   SignUp(String name, String username, String password, String email,
       String phone, String gender, String dob) async {
+    sharedPreferences = await SharedPreferences.getInstance();
     DateTime datedob = DateTime.parse(dob);
-    user = User(0, name, username, password, email, phone, gender, datedob);
-    int code = await apiManager.signUp(user, context);
+    user = User(
+        0,
+        name,
+        username,
+        "https://www.w3schools.com/w3images/avatar2.png",
+        password,
+        email,
+        phone,
+        gender,
+        datedob);
+    int code = await apiManager.signUp(user);
     if (code == 200) {
       setState(() {
         _isLoading = false;
-        Navigator.pop(context, user);
+        //Navigator.pop(context, user);
+        sharedPreferences.setString("activate", emailController.text);
+        sharedPreferences.setString("activatep", repasswordController.text);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    PinCodeVerificationScreen(emailController.text)));
       });
     } else if (code == 409) {
       setState(() {
         _isLoading = false;
       });
-      globals.showMessage(_signupscaffoldKey, "Username Already Exist !", 2);
-    } else if (code == 207) {
-      setState(() {
-        _isLoading = false;
-      });
       globals.showMessage(
-          _signupscaffoldKey, "Email address belongs to another account", 2);
+          _signupscaffoldKey, "Username or Email address already used !", 2);
     } else {
       setState(() {
         _isLoading = false;
@@ -161,7 +274,7 @@ class _SignUpPageState extends State<SignUpPage> {
         },
         elevation: 4,
         color: Colors.blue,
-        child: Text("Sign Up", style: TextStyle(color: Colors.white70)),
+        child: Text("Sign Up", style: TextStyle(color: Colors.white)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       ),
     );
@@ -175,7 +288,17 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController dateController = new TextEditingController();
   final TextEditingController repasswordController =
       new TextEditingController();
+
+  String oldemail = "";
+  String oldusername = "";
   String selectedGender = "";
+  bool checkload = false;
+  Widget available = SizedBox();
+  Widget availableu = SizedBox();
+  bool checkedemail = true;
+  bool checkedusername = true;
+  String emailvalidatetext = "Enter valid email address";
+  String usernamevalidatetext = "Enter valid Username";
 
   Container textSection() {
     return Container(
@@ -209,14 +332,18 @@ class _SignUpPageState extends State<SignUpPage> {
                 children: <Widget>[
                   Expanded(
                     child: TextFormField(
+                      onTap: () {
+                        _chooseDate(context, dateController.text);
+                      },
                       autovalidateMode: AutovalidateMode.onUserInteraction,
+                      style: TextStyle(color: Colors.white70),
                       decoration: InputDecoration(
                         icon: Icon(
                           Icons.calendar_today,
                           color: Colors.blue,
                         ),
                         hintText: 'Enter your date of birth',
-                        labelText: 'Dob',
+                        labelText: 'Date of birth',
                       ),
                       controller: dateController,
                       keyboardType: TextInputType.datetime,
@@ -224,49 +351,58 @@ class _SignUpPageState extends State<SignUpPage> {
                           isValidDob(val) ? null : "Not valid date",
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.more_horiz, color: Colors.blue),
-                    tooltip: 'Choose date',
-                    onPressed: (() {
-                      _chooseDate(context, dateController.text);
-                    }),
-                  )
                 ],
               ),
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                keyboardType: TextInputType.name,
-                controller: usernameController,
-                validator: (val) => val.isEmpty ? "Username is required" : null,
-                cursorColor: Colors.white,
-                style: TextStyle(color: Colors.white70),
-                decoration: InputDecoration(
-                  labelText: "Username",
-                  icon: Icon(Icons.alternate_email, color: Colors.blue),
-                  hintText: "",
-                  border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white70)),
-                  hintStyle: TextStyle(color: Colors.white70),
-                ),
+              SizedBox(height: 30.0),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      keyboardType: TextInputType.name,
+                      controller: usernameController,
+                      validator: (value) =>
+                          isValidUsername(value) ? null : usernamevalidatetext,
+                      cursorColor: Colors.white,
+                      style: TextStyle(color: Colors.white70),
+                      decoration: InputDecoration(
+                        labelText: "Username",
+                        icon: Icon(Icons.alternate_email, color: Colors.blue),
+                        hintText: "",
+                        border: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white70)),
+                        hintStyle: TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                  ),
+                  availableu,
+                ],
               ),
               SizedBox(height: 30.0),
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                keyboardType: TextInputType.emailAddress,
-                controller: emailController,
-                cursorColor: Colors.white,
-                onFieldSubmitted: (value) {},
-                validator: (value) =>
-                    isValidEmail(value) ? null : "Enter valid email address",
-                style: TextStyle(color: Colors.white70),
-                decoration: InputDecoration(
-                  labelText: "E-mail",
-                  icon: Icon(Icons.email, color: Colors.blue),
-                  hintText: "Example@gmail.com",
-                  border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white70)),
-                  hintStyle: TextStyle(color: Colors.white70),
-                ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      keyboardType: TextInputType.emailAddress,
+                      controller: emailController,
+                      cursorColor: Colors.white,
+                      onFieldSubmitted: (value) {},
+                      validator: (value) =>
+                          isValidEmail(value) ? null : emailvalidatetext,
+                      style: TextStyle(color: Colors.white70),
+                      decoration: InputDecoration(
+                        labelText: "E-mail",
+                        icon: Icon(Icons.email, color: Colors.blue),
+                        hintText: "Example@gmail.com",
+                        border: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white70)),
+                        hintStyle: TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                  ),
+                  available,
+                ],
               ),
               SizedBox(height: 30.0),
               TextFormField(
@@ -357,19 +493,6 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       ),
     );
-  }
-
-  Container headerSectionold() {
-    return Container(
-        margin: EdgeInsets.only(top: 40.0),
-        padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-        child: Center(
-          child: Text("Register",
-              style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold)),
-        ));
   }
 
   Container headerSection() {

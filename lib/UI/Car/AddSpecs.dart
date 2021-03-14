@@ -22,22 +22,12 @@ class _AddSpecsState extends State<AddSpecs> {
   GlobalKey<FormState> _form = GlobalKey<FormState>();
   bool _isLoading = false;
   ApiManager apiManager = ApiManager();
-  Specs spec;
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
     dialogPickerColor = Colors.white;
-
-    spec = await apiManager.fetchSpec(context, _scaffoldKey, widget.car.id);
-    if(spec != null) {
-
-      _isLoading = false;
-    }
-    else{
-
-    }
   }
 
   void _validate() {

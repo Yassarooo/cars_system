@@ -2,12 +2,13 @@
 class Car {
   String model, brand, brandlogo,type, buyername, level;
   double price, sellprice, rate;
-  int id, paramid, specsid, seats,year;
+  int id,version, paramid, specsid, seats,year;
   bool sold;
   List<String> images;
 
   Car(
       this.id,
+      this.version,
       this.model,
       this.brand,
       this.brandlogo,
@@ -27,6 +28,7 @@ class Car {
   factory Car.fromJson(dynamic json) {
     return Car(
       json['id'] as int,
+      json['version'] as int,
       json['model'] as String,
       json['brand'] as String,
       json['brandlogo'] as String,
@@ -46,6 +48,8 @@ class Car {
   }
 
   Map toJson() => {
+        'id': id,
+        'version': version,
         'model': model,
         'brand': brand,
         'brandlogo': brand,
@@ -53,7 +57,7 @@ class Car {
         'seats': seats,
         'paramid': paramid,
         'buyername': buyername,
-        'sellprice': buyername,
+        'sellprice': sellprice,
         'sold': sold,
         'level': level,
         'rate': rate,

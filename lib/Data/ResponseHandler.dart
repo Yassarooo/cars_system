@@ -4,7 +4,7 @@ import '../globals.dart' as globals;
 
 class ResponseHandler {
   void handleResponse(int code, BuildContext context,
-      GlobalKey<ScaffoldState> key, bool checktoken) {
+      GlobalKey<ScaffoldState> key, bool token) {
     //ok
     if (code == 200) {
       //globals.showMessage(key, "Created Successfully", 2, Colors.green);
@@ -15,7 +15,7 @@ class ResponseHandler {
     }
     //unauthorized
     else if (code == 401) {
-      if (checktoken) {
+      if (token) {
         Widget okButton = FlatButton(
           child: Text("OK"),
           onPressed: () {
@@ -53,6 +53,7 @@ class ResponseHandler {
     //internal server error
     else if (code == 500) {
       globals.showMessage(key, "An error occured", 2, Colors.red);
+      //globals.showMessage(key, "An error occured", 2, Colors.yellow);
     }
     //internal server error
     else {

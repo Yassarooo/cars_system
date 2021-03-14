@@ -5,6 +5,17 @@ import 'package:flutterapp/Data/SharedData.dart';
 import 'package:flutterapp/Model/User.dart';
 import 'package:flutterapp/UI/Welcome/SignUpPage.dart';
 import '../../globals.dart' as globals;
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+GoogleSignIn _googleSignIn = GoogleSignIn(
+  scopes: <String>[
+    'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    "https://www.googleapis.com/auth/userinfo.profile"
+  ],
+);
 
 class SignInPage extends StatefulWidget {
   @override
@@ -19,6 +30,7 @@ class _SignInPageState extends State<SignInPage> {
   SharedData sharedData = SharedData();
   final TextEditingController usernameController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
+  static final FacebookLogin facebookSignIn = new FacebookLogin();
 
   GlobalKey<FormState> _form = GlobalKey<FormState>();
 
@@ -59,6 +71,56 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
+  Future<void> GoogleLogin() async {
+    try {
+      GoogleSignInAccount user = await _googleSignIn.signIn();
+      GoogleSignInAuthentication googleSignInAuthentication =
+          await user.authentication;
+      //globals.showMessage(signinscaffoldKey, "Logged in !", 3, Colors.green);
+      //print("AccessToken:" + googleSignInAuthentication.accessToken);
+      //print("IDToken:" + googleSignInAuthentication.idToken);
+      setState(() {
+        _isLoading = true;
+      });
+      await apiManager.GoogleLogin(
+          googleSignInAuthentication.idToken, context, signinscaffoldKey);
+    } catch (error) {
+      setState(() {
+        _isLoading = false;
+      });
+      print(error);
+    }
+  }
+
+  Future<Null> _FbLogin() async {
+    final FacebookLoginResult result = await facebookSignIn.logIn(['email']);
+
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        final FacebookAccessToken accessToken = result.accessToken;
+        //globals.showMessage(signinscaffoldKey, "Logged in !", 3, Colors.green);
+        setState(() {
+          _isLoading = true;
+        });
+        apiManager.FbLogin(accessToken.token, context, signinscaffoldKey);
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        globals.showMessage(
+            signinscaffoldKey, "Canceled by user ! }", 3, Colors.yellow);
+        setState(() {
+          _isLoading = false;
+        });
+        break;
+      case FacebookLoginStatus.error:
+        globals.showMessage(
+            signinscaffoldKey, "${result.errorMessage}", 10, Colors.red);
+        setState(() {
+          _isLoading = false;
+        });
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +133,7 @@ class _SignInPageState extends State<SignInPage> {
             : Column(
                 children: <Widget>[
                   Expanded(
-                    flex: 3,
+                    flex: 2,
                     child: Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
@@ -171,7 +233,7 @@ class _SignInPageState extends State<SignInPage> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 30, 0, 20),
+                            padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                             child: Container(
                               //width: MediaQuery.of(context).size.width *0.5,
                               alignment: Alignment.center,
@@ -184,11 +246,37 @@ class _SignInPageState extends State<SignInPage> {
                                 },
                                 color: Colors.blue,
                                 child: Text("Sign In",
-                                    style: TextStyle(color: Colors.white70)),
+                                    style: TextStyle(color: Colors.white)),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(5.0)),
                               ),
                             ),
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Expanded(child: Divider(color: Colors.white70)),
+                              Text("   OR   "),
+                              Expanded(child: Divider(color: Colors.white70)),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          SignInButton(
+                            Buttons.FacebookNew,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0)),
+                            onPressed: () {
+                              _FbLogin();
+                            },
+                          ),
+                          SignInButton(
+                            Buttons.Google,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0)),
+                            onPressed: () {
+                              GoogleLogin();
+                            },
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(vertical: 10.0),
@@ -201,9 +289,14 @@ class _SignInPageState extends State<SignInPage> {
                                             builder: (context) =>
                                                 SignUpPage()));
 
-                                    usernameController.text = u.username;
+                                    usernameController.text = u.username.trim();
                                     passwordController.text = u.password;
-                                    signIn(u.username, u.password);
+                                    globals.showMessage(
+                                        signinscaffoldKey,
+                                        "Check your email for confirmation message",
+                                        3,
+                                        Colors.orange);
+                                    //signIn(u.username, u.password);
                                   },
                                   child: Row(
                                       mainAxisAlignment:
@@ -212,7 +305,7 @@ class _SignInPageState extends State<SignInPage> {
                                         Text("Need an account? ",
                                             style: TextStyle(
                                                 color: Colors.white70,
-                                                fontSize: 15.0,
+                                                fontSize: 13.0,
                                                 fontWeight: FontWeight.bold)),
                                         Text("Sign Up",
                                             style: TextStyle(

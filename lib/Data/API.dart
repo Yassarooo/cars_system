@@ -9,11 +9,13 @@ import 'package:flutterapp/Model/User.dart';
 import 'package:flutterapp/UI/HomePage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutterapp/Model/Car.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../globals.dart' as globals;
 
 class ApiManager {
   ResponseHandler responseHandler = ResponseHandler();
   SharedData sharedData = SharedData();
+  SharedPreferences sharedPreferences;
 
   Future<bool> fetchCars(
       BuildContext context, GlobalKey<ScaffoldState> scaffoldkey) async {
@@ -28,29 +30,7 @@ class ApiManager {
         globals.carsobj.cars = globals.carsobj.cars.reversed.toList();
       return true;
     } else {
-      await this.CheckToken(globals.token);
-      //globals.showMessage(scaffoldkey, "Unknown error occured", 2, Colors.red);
-      responseHandler.handleResponse(
-          response.statusCode, context, scaffoldkey, false);
-      //throw HttpException('Failed to load cars');
-    }
-  }  
-  
-  Future<Specs> fetchSpec(
-      BuildContext context, GlobalKey<ScaffoldState> scaffoldkey,id) async {
-    Map<String, String> Params = {
-      'carid': id,
-    };
-    var uri = Uri.https(globals.host, "/specs",Params);
-    var response = await http.get(uri, headers: globals.myheaders);
-    var jsonResponse;
-
-    if (response.statusCode == 200) {
-      jsonResponse = json.decode(response.body);
-      Specs spec = Specs.fromJson(jsonResponse);
-      return spec;
-    } else {
-      //await this.CheckToken(globals.token);
+      await this.CheckToken(globals.token, context, scaffoldkey);
       //globals.showMessage(scaffoldkey, "Unknown error occured", 2, Colors.red);
       responseHandler.handleResponse(
           response.statusCode, context, scaffoldkey, false);
@@ -63,6 +43,19 @@ class ApiManager {
     var uri = Uri.https('networkapplications.herokuapp.com', '/api/cars');
     var response =
         await http.post(uri, headers: globals.myheaders, body: jsonCar);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> editCar(Car car) async {
+    String jsonCar = jsonEncode(car.toJson());
+    var uri = Uri.https('networkapplications.herokuapp.com', '/api/cars');
+    var response =
+        await http.put(uri, headers: globals.myheaders, body: jsonCar);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return true;
@@ -92,6 +85,7 @@ class ApiManager {
       onPressed: () async {
         Navigator.pop(context);
         AlertDialog alert2 = AlertDialog(
+          backgroundColor: globals.kAccentColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           title: Text("Deleting..."),
@@ -110,9 +104,8 @@ class ApiManager {
         var response = await http.delete(uri, headers: globals.myheaders);
         if (response.statusCode == 200 || response.statusCode == 201) {
           await fetchCars(context, key);
-          //Navigator.pop(context);
-          globals.showMessage(
-              key, "${car.model} Deleted Successfully", 2, Colors.green);
+          Navigator.pop(context);
+          Navigator.pop(context);
           // Navigator.pushAndRemoveUntil(
           //     context,
           //     MaterialPageRoute(builder: (context) => HomePage()),
@@ -129,6 +122,7 @@ class ApiManager {
       },
     ); // set up the AlertDialog
     AlertDialog alert = AlertDialog(
+      backgroundColor: globals.kAccentColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       title: Text("Delete Car ?"),
       content: Text("${car.brand + " " + car.model} will be deleted."),
@@ -147,8 +141,41 @@ class ApiManager {
     return false;
   }
 
+  Future<Specs> fetchSpec(
+      BuildContext context, GlobalKey<ScaffoldState> key, id) async {
+    var uri = Uri.https(globals.host, "/api/getcarspecs/$id");
+    var response = await http.get(uri, headers: globals.myheaders);
+    var jsonResponse;
+
+    if (response.statusCode == 200) {
+      jsonResponse = json.decode(response.body);
+      Specs spec = Specs.fromJson(jsonResponse);
+      return spec;
+    } else {
+      globals.showMessage(key, response.reasonPhrase, 4, Colors.red);
+      //await this.CheckToken(globals.token);
+      //globals.showMessage(scaffoldkey, "Unknown error occured", 2, Colors.red);
+      //responseHandler.handleResponse(
+      //    response.statusCode, context, scaffoldkey, false);
+      //throw HttpException('Failed to load cars');
+    }
+  }
+
+  Future<bool> addSpec(Specs spec) async {
+    String jsonSpecs = jsonEncode(spec.toJson());
+    var uri = Uri.https('networkapplications.herokuapp.com', '/api/specs');
+    var response =
+        await http.post(uri, headers: globals.myheaders, body: jsonSpecs);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   Future<bool> fetchParams(
-      BuildContext context, GlobalKey<ScaffoldState> scaffoldkey) async {
+      BuildContext context, GlobalKey<ScaffoldState> key) async {
     var uri = Uri.https(globals.host, '/api/params');
     var response = await http.get(uri, headers: globals.myheaders);
     var jsonResponse;
@@ -157,8 +184,7 @@ class ApiManager {
       globals.paramsobj = Params.fromJson(jsonResponse);
       return true;
     } else {
-      responseHandler.handleResponse(
-          response.statusCode, context, scaffoldkey, false);
+      globals.showMessage(key, response.reasonPhrase, 4, Colors.red);
       //throw Exception('Failed to load Params');
     }
   }
@@ -189,6 +215,7 @@ class ApiManager {
       onPressed: () async {
         Navigator.pop(con);
         AlertDialog alert2 = AlertDialog(
+            backgroundColor: globals.kAccentColor,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0)),
             title: Text("Adding..."),
@@ -221,8 +248,7 @@ class ApiManager {
             globals.showMessage(key, "Added Successfully", 2, Colors.green);
           } else {
             Navigator.pop(con);
-            responseHandler.handleResponse(
-                response.statusCode, con, key, false);
+            globals.showMessage(key, response.reasonPhrase, 4, Colors.red);
             // If that call was not successful, throw an error.
             throw Exception(
                 'Failed to Add Param' + response.statusCode.toString());
@@ -234,6 +260,7 @@ class ApiManager {
     ); // set up the AlertDialog
 
     AlertDialog alert = AlertDialog(
+      backgroundColor: globals.kAccentColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       title: Text("Enter Param Details"),
       content: ListView(shrinkWrap: true, children: <Widget>[
@@ -291,6 +318,7 @@ class ApiManager {
       onPressed: () async {
         Navigator.pop(con);
         AlertDialog alert2 = AlertDialog(
+          backgroundColor: globals.kAccentColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           title: Text("Deleting..."),
@@ -314,7 +342,7 @@ class ApiManager {
           Navigator.pop(con);
           return true;
         } else {
-          responseHandler.handleResponse(response.statusCode, con, key, false);
+          globals.showMessage(key, response.reasonPhrase, 4, Colors.red);
           Navigator.pop(con);
           // If that call was not successful, throw an error.
           throw Exception(
@@ -323,6 +351,7 @@ class ApiManager {
       },
     ); // set up the AlertDialog
     AlertDialog alert = AlertDialog(
+      backgroundColor: globals.kAccentColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       title: Text("Delete Param ?"),
       content:
@@ -368,6 +397,7 @@ class ApiManager {
       onPressed: () async {
         Navigator.pop(con);
         AlertDialog alert2 = AlertDialog(
+          backgroundColor: globals.kAccentColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           title: Text("Please Wait..."),
@@ -403,8 +433,7 @@ class ApiManager {
                 key, "Param $id edited Successfully", 2, Colors.green);
             return true;
           } else {
-            responseHandler.handleResponse(
-                response.statusCode, con, key, false);
+            globals.showMessage(key, response.reasonPhrase, 4, Colors.red);
             Navigator.pop(con);
             // If that call was not successful, throw an error.
             throw Exception(
@@ -414,6 +443,7 @@ class ApiManager {
       },
     ); // set up the AlertDialog
     AlertDialog alert = AlertDialog(
+      backgroundColor: globals.kAccentColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       title: Text("Edit Parameters \"$id\" "),
       content: ListView(shrinkWrap: true, children: <Widget>[
@@ -467,6 +497,10 @@ class ApiManager {
       String token = jsonResponse['token'];
       await sharedData.saveToken(token);
 
+      sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences.setString("activate", null);
+      sharedPreferences.setString("activatep", null);
+
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
@@ -475,10 +509,70 @@ class ApiManager {
     return response.statusCode;
   }
 
-  Future<int> signUp(User user, BuildContext context) async {
+  Future<int> FbLogin(
+      String token, BuildContext context, GlobalKey<ScaffoldState> key) async {
+    Map<String, String> Params = {
+      'token': token,
+    };
+    var jsonResponse;
+    var uri = Uri.https(globals.host, '/facebooklogin', Params);
+    var response = await http.post(uri);
+
+    if (response.statusCode == 200) {
+      jsonResponse = json.decode(response.body);
+
+      await sharedData.saveUser(jsonResponse);
+
+      String token = jsonResponse['token'];
+      await sharedData.saveToken(token);
+
+      sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences.setString("activate", null);
+      sharedPreferences.setString("activatep", null);
+
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false);
+    }
+    return response.statusCode;
+  }
+
+  Future<int> GoogleLogin(
+      String token, BuildContext context, GlobalKey<ScaffoldState> key) async {
+    Map<String, String> Params = {
+      'token': token,
+    };
+    var jsonResponse;
+    var uri = Uri.https(globals.host, '/googlelogin', Params);
+    var response = await http.post(uri);
+
+    if (response.statusCode == 200) {
+      jsonResponse = json.decode(response.body);
+
+      await sharedData.saveUser(jsonResponse);
+
+      String token = jsonResponse['token'];
+      await sharedData.saveToken(token);
+
+      sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences.setString("activate", null);
+      sharedPreferences.setString("activatep", null);
+
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false);
+    } else {
+      globals.showMessage(key, response.reasonPhrase, 4, Colors.red);
+    }
+    return response.statusCode;
+  }
+
+  Future<int> signUp(User user) async {
     String jsonUser = jsonEncode(user);
     print(jsonUser);
-    var uri = Uri.https('networkapplications.herokuapp.com', '/register');
+    var uri = Uri.https('networkapplications.herokuapp.com', '/registration');
     Map<String, String> myheaders = {
       'content-type': 'application/json',
     };
@@ -487,15 +581,45 @@ class ApiManager {
     return response.statusCode;
   }
 
-  // ignore: non_constant_identifier_names
-  Future<int> CheckToken(String token) async {
-    // ignore: non_constant_identifier_names
+  Future<int> checkUsernameOrEmail(String username) async {
+    Map<String, String> Params = {
+      'username': username,
+    };
+    var uri = Uri.https(globals.host, '/checkusername', Params);
+    var response = await http.post(
+      uri,
+    );
+
+    return response.statusCode;
+  }
+
+  Future<int> CheckToken(
+      String token, BuildContext context, GlobalKey<ScaffoldState> key) async {
     Map<String, String> Params = {
       'token': token,
     };
     var uri = Uri.https(globals.host, '/checktoken', Params);
     var response = await http.post(uri);
+    responseHandler.handleResponse(response.statusCode, context, key, true);
+    return response.statusCode;
+  }
 
+  Future<int> ConfirmRegistration(String token, String email) async {
+    Map<String, String> Params = {
+      'token': token,
+      'email': email,
+    };
+    var uri = Uri.https(globals.host, '/registrationConfirm', Params);
+    var response = await http.post(uri);
+    return response.statusCode;
+  }
+
+  Future<int> ResendEmail(String email) async {
+    Map<String, String> Params = {
+      'email': email,
+    };
+    var uri = Uri.https(globals.host, '/resendEmail', Params);
+    var response = await http.get(uri);
     return response.statusCode;
   }
 

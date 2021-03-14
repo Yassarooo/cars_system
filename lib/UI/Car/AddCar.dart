@@ -7,12 +7,12 @@ import 'package:flutterapp/UI/Car/BrandListPage.dart';
 import '../../globals.dart' as globals;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-class AddCarPage extends StatefulWidget {
+class AddCar extends StatefulWidget {
   @override
-  _AddCarPageState createState() => _AddCarPageState();
+  _AddCarState createState() => _AddCarState();
 }
 
-class _AddCarPageState extends State<AddCarPage> {
+class _AddCarState extends State<AddCar> {
   GlobalKey<FormState> _form = GlobalKey<FormState>();
   bool _isLoading = false;
   ApiManager apiManager = ApiManager();
@@ -51,7 +51,7 @@ class _AddCarPageState extends State<AddCarPage> {
     try {
       DateTime now = DateTime.now();
       int intyear = int.parse(year);
-      if (intyear < now.year && intyear > 1900)
+      if (intyear <= now.year && intyear > 1900)
         return true;
       else
         return false;
@@ -87,7 +87,7 @@ class _AddCarPageState extends State<AddCarPage> {
       return;
     }
 
-    Car car = Car(0, model, brand, "", "", "", doubleprice, 0, seats, false,
+    Car car = Car(0, 0, model, brand, "", "", "", doubleprice, 0, seats, false,
         paramid, level, rate, 0, intyear, images);
 
     bool success = await apiManager.addCar(car);

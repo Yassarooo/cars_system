@@ -81,7 +81,7 @@ class _AvailableCarsState extends State<AvailableCars> {
               ),
 */
                     SizedBox(
-                      height: 16,
+                      height: 30,
                     ),
                     Text(
                       "Available Cars (" +

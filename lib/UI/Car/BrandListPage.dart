@@ -1,5 +1,7 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/globals.dart' as globals;
+import 'package:flutterapp/globals.dart';
 
 class BrandsList extends StatefulWidget {
   @override
@@ -9,7 +11,7 @@ class BrandsList extends StatefulWidget {
 class _BrandsListState extends State<BrandsList> {
   String _searchText = "";
   final TextEditingController _filter = new TextEditingController();
-  List<String> filteredBrands = List<String>();
+  List<Brand> filteredBrands = List<Brand>();
   final GlobalKey<ScaffoldState> brandscaffoldKey =
       new GlobalKey<ScaffoldState>();
 
@@ -25,9 +27,9 @@ class _BrandsListState extends State<BrandsList> {
           print(_filter.text);
           _searchText = _filter.text;
         });
-        List<String> tempList = new List<String>();
-        for (String item in filteredBrands) {
-          if (item.toLowerCase().contains(_searchText.toLowerCase())) {
+        List<Brand> tempList = new List<Brand>();
+        for (Brand item in filteredBrands) {
+          if (item.name.toLowerCase().contains(_searchText.toLowerCase())) {
             tempList.add(item);
           }
         }
@@ -147,7 +149,7 @@ class _BrandsListState extends State<BrandsList> {
                 children: filteredBrands.map((item) {
                   return GestureDetector(
                       onTap: () {
-                        Navigator.pop(context, item);
+                        Navigator.pop(context, item.name);
                       },
                       child: buildBrand(item, context));
                 }).toList(),
@@ -160,25 +162,42 @@ class _BrandsListState extends State<BrandsList> {
   }
 }
 
-Widget buildBrand(String brand, BuildContext context) {
+Widget buildBrand(Brand brand, BuildContext context) {
   return Container(
     decoration: BoxDecoration(
-      color: globals.kAccentColor,
+      color: Colors.blue.shade400,
       borderRadius: BorderRadius.all(
         Radius.circular(15),
       ),
     ),
-    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-    margin: EdgeInsets.only(right: 10, left: 10),
-    //width: MediaQuery.of(context).size.width,
+    padding: EdgeInsets.fromLTRB(5, 0, 5, 10),
+    margin: EdgeInsets.only(right: 5, left: 5),
     child: Align(
       alignment: Alignment.center,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          brand,
-          style: TextStyle(fontSize: 20),
-        ),
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: ExtendedImage.network(
+              brand.picurl,
+              width: 55,
+              height: 55,
+              fit: BoxFit.scaleDown,
+              cache: true,
+              //cancelToken: cancellationToken,
+            ),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: EdgeInsets.only(left: 10, right: 10),
+              child: Text(
+                brand.name,
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ),
+        ],
       ),
     ),
   );

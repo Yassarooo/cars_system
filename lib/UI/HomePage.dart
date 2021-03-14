@@ -1,13 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 
+import 'package:extended_image/extended_image.dart';
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/Data/API.dart';
 import 'package:flutterapp/Model/Car.dart';
-import 'package:flutterapp/Model/Parameters.dart';
-import 'package:flutterapp/UI/Car/AddCarPage.dart';
+import 'package:flutterapp/UI/Car/AddCar.dart';
 import 'package:flutterapp/UI/PlaceHolder/AvailableCars.dart';
 import 'package:flutterapp/UI/PlaceHolder/HomePH.dart';
 import 'package:flutterapp/UI/PlaceHolder/ParamsPH.dart';
@@ -79,15 +78,53 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         actions: <Widget>[
           FlatButton(
             onPressed: () {
-              sharedPreferences.clear();
-              globals.carsobj = null;
-              globals.myheaders = null;
-              globals.user = null;
-              globals.paramsobj = null;
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (BuildContext context) => SignInPage()),
-                  (Route<dynamic> route) => false);
+              Widget cancelButton = FlatButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              );
+              Widget continueButton = FlatButton(
+                child: Text(
+                  "Log out",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textScaleFactor: 1.2,
+                ),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  sharedPreferences.clear();
+                  globals.carsobj = null;
+                  globals.myheaders = null;
+                  globals.user = null;
+                  globals.paramsobj = null;
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => SignInPage()),
+                      (Route<dynamic> route) => false);
+                },
+              ); // set up the AlertDialog
+              AlertDialog alert = AlertDialog(
+                backgroundColor: globals.kAccentColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0)),
+                title: Text("Log Out ?"),
+                content: Text(
+                    "Are you sure you want to log out from your account ?"),
+                actions: [
+                  cancelButton,
+                  continueButton,
+                ],
+              ); // show the dialog
+              showDialog(
+                barrierDismissible: false,
+                context: context,
+                builder: (BuildContext con) {
+                  return alert;
+                },
+              );
             },
             child: Icon(Icons.logout),
           ),
@@ -147,21 +184,19 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     _homescaffoldKey, "Please add parameters first", 2);
                 return;
               } else {
-                Car c = await Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => AddCarPage()));
-                c == null
-                    ? print(
-                        "klaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaab")
-                    :
-                    // ignore: unnecessary_statements
-                    () {
-                        globals.showMessage(
-                            _homescaffoldKey,
-                            c.brand + " " + c.model + " has added successfully",
-                            2,
-                            Colors.green);
-                        apiManager.fetchCars(context, _homescaffoldKey);
-                      };
+                Car c = await Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => AddCar()));
+                if (c != null) {
+                  globals.showMessage(
+                      _homescaffoldKey,
+                      c.brand + " " + c.model + " has added successfully",
+                      2,
+                      Colors.green);
+                  await apiManager.fetchCars(context, _homescaffoldKey);
+                  setState(() {
+                    globals.carsobj = globals.carsobj;
+                  });
+                }
               }
               _animationController.reverse();
             },
@@ -366,8 +401,14 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       child: Container(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(40.0),
-                          child: Image.asset('assets/images/avatar.png',
-                              width: 200.0, height: 200.0),
+                          child: ExtendedImage.network(
+                            globals.user != null
+                                ? globals.user.profilepic
+                                : "https://www.w3schools.com/w3images/avatar2.png",
+                            fit: BoxFit.scaleDown,
+                            cache: true,
+                            //cancelToken: cancellationToken,
+                          ),
                         ),
                       ),
                     ),

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "965172490679",
+    "project_id": "cars-system-13b16",
+    "storage_bucket": "cars-system-13b16.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965172490679:android:7d51d5e8adcd8723b2b832",
+        "android_client_info": {
+          "package_name": "com.example.flutterapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "965172490679-vlueokajh232ojttfrtjv23ubs5k3t3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj_CpsaEZdqMcILgYXH4A_fLoSSO2oj0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "965172490679-vlueokajh232ojttfrtjv23ubs5k3t3h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

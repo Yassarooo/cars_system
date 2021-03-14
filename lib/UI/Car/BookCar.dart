@@ -7,8 +7,11 @@ import 'package:flutter/painting.dart';
 import 'package:flutterapp/Data/API.dart';
 import 'package:flutterapp/Model/Car.dart';
 import 'package:flutterapp/Model/Specs.dart';
+import 'package:flutterapp/UI/Car/AddSpecs.dart';
+import 'package:flutterapp/UI/Car/EditCar.dart';
 import 'package:flutterapp/globals.dart' as globals;
 import 'package:image_picker/image_picker.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 //import 'package:multi_image_picker/multi_image_picker.dart';
 //import 'package:flutter_absolute_path/flutter_absolute_path.dart';
@@ -26,6 +29,7 @@ class _BookCarState extends State<BookCar> {
   GlobalKey<ScaffoldState> _bookScaffoldKey = GlobalKey<ScaffoldState>();
   ApiManager apiManager = ApiManager();
   File _image;
+  bool isloading = true;
 
   int _currentImage = 0;
   Specs spec;
@@ -37,10 +41,12 @@ class _BookCarState extends State<BookCar> {
   }
 
   Future<void> getSpecs() async {
+    isloading = true;
     Specs s =
         await apiManager.fetchSpec(context, _bookScaffoldKey, widget.car.id);
     setState(() {
       spec = s;
+      isloading = false;
     });
   }
 
@@ -72,83 +78,31 @@ class _BookCarState extends State<BookCar> {
     return Scaffold(
       key: _bookScaffoldKey,
       backgroundColor: globals.kBackgroundColor,
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
-                              child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(15),
-                                    ),
-                                    border: Border.all(
-                                      color: Colors.grey[300],
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.keyboard_arrow_left,
-                                    color: Colors.white,
-                                    size: 28,
-                                  )),
-                            ),
-                            //share and bookmark
-                            Row(
-                              children: [
-                                widget.car.images.length < 3
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          getAndUpload(context);
-                                        },
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(15),
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.grey[300],
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            Icons.add_to_photos,
-                                            color: Colors.white,
-                                            size: 22,
-                                          ),
-                                        ),
-                                      )
-                                    : SizedBox(),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                GestureDetector(
-                                  onTap: () async {
-                                    bool success = await apiManager.deleteCar(
-                                        context, widget.car, _bookScaffoldKey);
-                                    if (success) Navigator.pop(context);
-                                  },
-                                  child: Container(
+      body: RefreshIndicator(
+        onRefresh: getSpecs,
+        child: SafeArea(
+          child: Container(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        //buttons
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Container(
                                     width: 40,
                                     height: 40,
                                     decoration: BoxDecoration(
@@ -156,193 +110,367 @@ class _BookCarState extends State<BookCar> {
                                         Radius.circular(15),
                                       ),
                                       border: Border.all(
-                                        color: Colors.red,
+                                        color: Colors.grey[300],
                                         width: 1,
                                       ),
                                     ),
                                     child: Icon(
-                                      CupertinoIcons.delete,
-                                      color: Colors.red,
-                                      size: 22,
+                                      Icons.keyboard_arrow_left,
+                                      color: Colors.white,
+                                      size: 28,
+                                    )),
+                              ),
+                              //share and bookmark
+                              Row(
+                                children: [
+                                  widget.car.images.length < 3
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            getAndUpload(context);
+                                          },
+                                          child: Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(15),
+                                              ),
+                                              border: Border.all(
+                                                color: Colors.grey[300],
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Icon(
+                                              Icons.add_to_photos,
+                                              color: Colors.white,
+                                              size: 22,
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      Car c = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditCar(car: widget.car)));
+                                      if (c != null) {
+                                        globals.showMessage(
+                                            _bookScaffoldKey,
+                                            c.brand +
+                                                " " +
+                                                c.model +
+                                                " has edited successfully",
+                                            2,
+                                            Colors.green);
+                                        setState(() {
+                                          c.version++;
+                                          widget.car = c;
+                                        });
+                                      } else {}
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(15),
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        MdiIcons.squareEditOutline,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          widget.car.model,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await apiManager.deleteCar(context,
+                                          widget.car, _bookScaffoldKey);
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(15),
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.red,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        CupertinoIcons.delete,
+                                        color: Colors.red,
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      //SizedBox(height: 8,),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: <Widget>[
-                            Image(
-                              width: 35,
-                              height: 35,
-                              fit: BoxFit.scaleDown,
-                              image: ExtendedNetworkImageProvider(
-                                widget.car.brandlogo,
-                                cache: true,
-                                retries: 3,
-                                //cancelToken: cancellationToken,
-                              ),
-                            ),
-                            Text(
-                              " " + widget.car.brand,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 19,
-                              ),
-                            ),
-                          ],
+                        SizedBox(
+                          height: 10,
                         ),
-                      ),
-                      //SizedBox(height: 8,),
-                      Expanded(
-                        child: Container(
-                          child: widget.car.images.length != 0
-                              ? PageView(
-                                  physics: BouncingScrollPhysics(),
-                                  onPageChanged: (int page) {
-                                    setState(() {
-                                      _currentImage = page;
-                                    });
-                                  },
-                                  children: widget.car.images.map((path) {
-                                    return Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 100,
-                                      ),
-                                      child: Hero(
-                                        tag: widget.car.model +
-                                            (globals.herocnt++).toString(),
-                                        child: Image.network(
-                                          path,
-                                          fit: BoxFit.scaleDown,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                )
-                              : Center(
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      await getAndUpload(context);
+
+                        //model
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            widget.car.model,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        //brand
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: <Widget>[
+                              Image(
+                                width: 35,
+                                height: 35,
+                                fit: BoxFit.scaleDown,
+                                image: ExtendedNetworkImageProvider(
+                                  widget.car.brandlogo,
+                                  cache: true,
+                                  retries: 3,
+                                  //cancelToken: cancellationToken,
+                                ),
+                              ),
+                              Text(
+                                " " + widget.car.brand,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 19,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        //images and page indicator
+                        Expanded(
+                          child: Container(
+                            child: widget.car.images.length != 0
+                                ? PageView(
+                                    physics: BouncingScrollPhysics(),
+                                    onPageChanged: (int page) {
+                                      setState(() {
+                                        _currentImage = page;
+                                      });
                                     },
-                                    child: Column(
-                                      children: <Widget>[
-                                        Text(
-                                          "Press to add image\n",
-                                          textAlign: TextAlign.center,
+                                    children: widget.car.images.map((path) {
+                                      return Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 100,
                                         ),
-                                        Icon(Icons.add_to_photos),
-                                      ],
+                                        child: Hero(
+                                          tag: widget.car.model +
+                                              (globals.herocnt++).toString(),
+                                          child: Image.network(
+                                            path,
+                                            fit: BoxFit.scaleDown,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  )
+                                : Center(
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        await getAndUpload(context);
+                                      },
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text(
+                                            "Press to add image\n",
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Icon(Icons.add_to_photos),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        widget.car.images.length > 1
+                            ? Container(
+                                margin: EdgeInsets.symmetric(vertical: 16),
+                                height: 10,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: buildPageIndicator(),
+                                ),
+                              )
+                            : Container(),
+                        //overview boxes
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              buildDetailsBox("Year",
+                                  widget.car.year.toString(), null, context),
+                              SizedBox(
+                                width: 7,
+                              ),
+                              buildDetailsBox(
+                                  "Type", widget.car.type, null, context),
+                              SizedBox(
+                                width: 7,
+                              ),
+                              buildDetailsBox(
+                                  "Status",
+                                  widget.car.sold ? "Sold" : "Available",
+                                  widget.car.sold ? Colors.red : Colors.green,
+                                  context),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                //specs
+                Container(
+                  decoration: BoxDecoration(
+                    color: globals.kAccentColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: !isloading
+                      ? spec == null
+                          ? Center(
+                              child: Container(
+                                height: 140,
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    spec = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                AddSpecs(car: widget.car)));
+                                    if (spec != null) {
+                                      globals.showMessage(
+                                          _bookScaffoldKey,
+                                          "Specs added successfully",
+                                          2,
+                                          Colors.green);
+                                      setState(() {
+                                        this.spec = spec;
+                                      });
+                                    } else {
+                                      globals.showMessage(_bookScaffoldKey,
+                                          "Failed to add specs", 2, Colors.red);
+                                    }
+                                  },
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text("Click to add specs\n"),
+                                      Icon(
+                                        Icons.add,
+                                        size: 40,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: 14, left: 16, right: 16),
+                                  child: Text(
+                                    "SPECIFICATIONS",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
-                        ),
-                      ),
-                      widget.car.images.length > 1
-                          ? Container(
-                              margin: EdgeInsets.symmetric(vertical: 16),
-                              height: 10,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: buildPageIndicator(),
-                              ),
-                            )
-                          : Container(),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            buildDetailsBox("Year", widget.car.year.toString(),
-                                null, context),
-                            SizedBox(
-                              width: 7,
-                            ),
-                            buildDetailsBox(
-                                "Type", widget.car.type, null, context),
-                            SizedBox(
-                              width: 7,
-                            ),
-                            buildDetailsBox(
-                                "Status",
-                                widget.car.sold ? "Sold" : "Available",
-                                widget.car.sold ? Colors.red : Colors.green,
-                                context),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: globals.kAccentColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 14, left: 16, right: 16),
-                      child: Text(
-                        "SPECIFICATIONS",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 80,
-                      padding: EdgeInsets.only(
-                        top: 8,
-                        left: 16,
-                      ),
-                      margin: EdgeInsets.only(bottom: 14),
-                      child: spec == null
-                          ? ListView(
-                              physics: BouncingScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                buildSpecificationCar("Color", "White"),
-                                buildSpecificationCar("Gearbox", "Automatic"),
-                                buildSpecificationCar("Seat", "4"),
-                                buildSpecificationCar("Motor", "v10 2.0"),
-                                buildSpecificationCar(
-                                    "Speed (0-100)", "3.2 sec"),
-                                buildSpecificationCar("Top Speed", "121 mph"),
+                                Container(
+                                  height: 80,
+                                  padding: EdgeInsets.only(
+                                    top: 8,
+                                    left: 16,
+                                  ),
+                                  margin: EdgeInsets.only(bottom: 14),
+                                  child: ListView(
+                                    physics: BouncingScrollPhysics(),
+                                    scrollDirection: Axis.horizontal,
+                                    children: [
+                                      buildSpecificationCar(
+                                          "Color", spec.color, true),
+                                      buildSpecificationCar(
+                                          "Doors", spec.doors.toString()),
+                                      buildSpecificationCar(
+                                          "Transmission", spec.transmission),
+                                      buildSpecificationCar(
+                                          "Speeds", "${spec.gears}"),
+                                      buildSpecificationCar(
+                                          "Seats", widget.car.seats.toString()),
+                                      buildSpecificationCar(
+                                          "Drive Wheel", spec.drive),
+                                      buildSpecificationCar(
+                                          "Fuel", spec.fueltype),
+                                      buildSpecificationCar("Max. Power",
+                                          spec.power.toString() + " hp"),
+                                      buildSpecificationCar(
+                                          "Turbo", spec.turbo ? "Yes" : "No"),
+                                      buildSpecificationCar("Fuel Tank",
+                                          spec.tank.toString() + " l"),
+                                      buildSpecificationCar("Top Speed",
+                                          spec.topspeed.toString() + " km/h"),
+                                      buildSpecificationCar("Acc (0-100)",
+                                          spec.acceleration.toString() + " s"),
+                                      buildSpecificationCar(
+                                          "Consumption",
+                                          spec.consumption.toString() +
+                                              " l/100km"),
+                                      buildSpecificationCar(
+                                          "ABS", spec.abs ? "Yes" : "No"),
+                                      buildSpecificationCar("Front Stabilizer",
+                                          spec.frontstabilizer ? "Yes" : "No"),
+                                      buildSpecificationCar("Rear Stabilizer",
+                                          spec.rearstabilizer ? "Yes" : "No"),
+                                      buildSpecificationCar("Turning Circle",
+                                          spec.turnangle.toString() + " m"),
+                                    ],
+                                  ),
+                                ),
                               ],
                             )
-                          : Center(child: CircularProgressIndicator()),
-                    ),
-                  ],
+                      : Center(child: CircularProgressIndicator()),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -471,7 +599,13 @@ class _BookCarState extends State<BookCar> {
     );
   }
 
-  Widget buildSpecificationCar(String title, String data) {
+  Widget buildSpecificationCar(String title, String data,
+      [bool color = false]) {
+    Color otherColor;
+    if (color) {
+      int value = int.parse(data, radix: 16);
+      otherColor = Color(value);
+    }
     return Container(
       width: 130,
       decoration: BoxDecoration(
@@ -489,24 +623,35 @@ class _BookCarState extends State<BookCar> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+          FittedBox(
+            fit: BoxFit.fitWidth,
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
           ),
           SizedBox(
             height: 8,
           ),
-          Text(
-            data,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          color
+              ? Icon(
+                  CupertinoIcons.circle_fill,
+                  color: otherColor,
+                )
+              : FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    data,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
         ],
       ),
     );

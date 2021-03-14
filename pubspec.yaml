@@ -34,12 +34,24 @@ dependencies:
   google_fonts: any
   image_picker: any
   extended_image: any
+  flex_color_picker: any
+  pin_code_fields: any
+  flutter_facebook_login: any
+  google_sign_in: any
+  firebase_auth: any
+  flutter_signin_button: any
   #multi_image_picker: 4.7.13
   #flutter_absolute_path: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: any
+  
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
